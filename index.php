@@ -69,9 +69,9 @@ class BlockNewsList {
         return $results;
     }
     function call_to_action_script() {
-        wp_enqueue_script( $this->block_slug. "-vuejs", 'https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js', array(),'1.0.0', true);
+        wp_enqueue_script( "vuejs", 'https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js', array(),'1.0.0', true);
         if(!is_admin()) {
-            wp_enqueue_script( $this->block_slug. "-script", getFileLocation($this->block_slug), array($this->block_slug. "-vuejs"), '1.0.0', true );
+            wp_enqueue_script( "script", 'app.js', array("vuejs"), '1.0.0', true );
         }
     }
 
@@ -135,7 +135,7 @@ class BlockNewsList {
         <?php 
         // This allows the WP Admin to load the vue object
         if(is_admin()){ ?>
-        <script id="calendar-script" src="<?php echo getFileLocation($this->block_slug)?>"></script>
+        <script id="script" src="app.js"></script>
         <?php } ?>
     <?php 
     }
