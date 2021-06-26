@@ -15,8 +15,8 @@
         return this.results.posts;
       }
     },
-    created(){
-      this.getResults();
+    async created(){
+      await this.getResults();
     },
     methods:{
       gotoPage(page){
@@ -30,12 +30,12 @@
         }
       },
       nextClick(){
-        if(this.pageNumber < this.posts.length){
+        if(this.pageNumber < this.results.posts.length){
           this.pageNumber++;
           this.getResults();
         }
       },
-      getResults(){
+      async getResults(){
         this.results.posts = [];
         this.loading = true;
         const self = this;
@@ -44,8 +44,8 @@
           'per_page': this.recordsToShow
         }
         const requestOptions = {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestData)
         };
         fetch(this.apiEndPoint, requestOptions)

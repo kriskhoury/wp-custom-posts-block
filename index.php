@@ -12,7 +12,6 @@ class BlockNewsList {
         $this->block_svg = file_get_contents(__DIR__ . '/icon.svg');
     }
     public function initialize() {
-        require_once __DIR__ . "/variables.php";
         add_action('acf/init', array($this, 'acf_block_init'));
         add_action('rest_api_init', function () {
             register_rest_route( 'v1', '/posts/', array(
@@ -34,7 +33,7 @@ class BlockNewsList {
                     'keywords'          => array($this->block_slug),
                     'mode'              => 'edit',
                     'supports'          => array( 'mode' => false ),
-                    'enqueue_assets'    => array($this, 'call_to_action_script'),
+                    'enqueue_assets'    => array($this, 'load_assets'),
                 )
             );   
         }
@@ -68,10 +67,12 @@ class BlockNewsList {
         $results['posts'] = $posts;
         return $results;
     }
-    function call_to_action_script() {
-        wp_enqueue_script( "vuejs", 'https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js', array(),'1.0.0', true);
+    function load_assets() {
+        $plugin_url =  plugin_dir_url( __FILE__ );
+        wp_enqueue_style( 'style', $plugin_url.'styles.css');
+        wp_enqueue_script( 'vuejs', 'https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js', array(),'1.0.0', true);
         if(!is_admin()) {
-            wp_enqueue_script( "script", 'app.js', array("vuejs"), '1.0.0', true );
+            wp_enqueue_script( 'script', $plugin_url.'app.js', array('vuejs'), '1.0.0', true );
         }
     }
 
@@ -90,20 +91,18 @@ class BlockNewsList {
         }
         ?>
         <section id="<?php echo esc_attr($id); ?>" class="blocks-<?php echo $this->block_slug; ?> <?php echo esc_attr($className); ?>">
-            <div id="news-list-app">
-                <div class="spinner" v-if="loading">
-                  <span class="spinner-inner-1"></span>
-                  <span class="spinner-inner-2"></span>
-                  <span class="spinner-inner-3"></span>
+            <div id="app">
+                <div v-if="loading">
+                  loading...
                 </div>
                 <div v-if="posts.length">
                     <div class="results-list">
                         <div v-for="(post, index) in posts" :key="index">
                             <figure class="news-image" v-if="post.featured" :style="{backgroundImage: 'url(' + post.featured + ')'}"></figure>
                             <aside class="news-content">
-                                <h4 class="news-title"><a :href="post.permalink">{{post.title}}</a></h4>
-                                <small class="news-date">{{post.date}}</small>
-                                <p class="news-excerpt">{{post.content}}</p>
+                                <div class="news-title"><a :href="post.permalink">{{post.title}}</a></div>
+                                <div class="news-date">{{post.date}}</div>
+                                <div class="news-excerpt">{{post.content}}</div>
                             </aside>
                         </div>
                     </div>
@@ -111,23 +110,19 @@ class BlockNewsList {
                         <div class="total"><b>{{results.total_records}}</b> posts</div>
                         <ul class="page-numbers">
                             <li>
-                                <a class="prev page-numbers" href="#" @click.prevent="prevClick()">
-                                    <i class="fas fa-chevron-left"></i>
-                                </a>
+                                <a class="prev page-numbers" href="#" @click.prevent="prevClick()"></a>
                             </li>
                             <li v-for="page in results.total_pages">
                                 <span v-if="page == pageNumber" class="page-numbers current">{{page}}</span>
                                 <a v-else class="page-numbers" href="#" @click.prevent="gotoPage(page)">{{page}}</a>
                             </li>
                             <li>
-                                <a class="next page-numbers" href="#" @click.prevent="nextClick()">
-                                    <i class="fas fa-chevron-right"></i>
-                                </a>
+                                <a class="next page-numbers" href="#" @click.prevent="nextClick()"></a>
                             </li>
                         </ul>
                     </div>
                 </div>
-                <div class="error" v-if="!posts.length && !loading">
+                <div v-if="!posts.length && !loading">
                     No results!
                 </div>
             </div>
